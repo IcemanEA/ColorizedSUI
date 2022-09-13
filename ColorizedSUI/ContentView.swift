@@ -8,11 +8,11 @@
 import SwiftUI
 
 struct ContentView: View {
-    @State private var color = Color.red
+    @State private var color = Color.black
     
-    @State private var redValue = Double.random(in: 1...255)
-    @State private var greenValue = Double.random(in: 1...255)
-    @State private var blueValue = Double.random(in: 1...255)
+    @State private var redValue = 1.0
+    @State private var greenValue = 1.0
+    @State private var blueValue = 1.0
     
     var body: some View {
         ZStack {
@@ -29,39 +29,59 @@ struct ContentView: View {
                             .stroke(.white, lineWidth: 4)
                     )
                 VStack {
-                    SetColorView(value: $redValue, color: .red)
-                    SetColorView(value: $greenValue, color: .green)
-                    SetColorView(value: $blueValue, color: .blue)
+                    HStack {
+                        LabelColor(value: $redValue)
+                        Slider(value: $redValue, in: 1...255, step: 1)
+                            .tint(.red)
+                            .onChange(of: redValue, perform: changeSlider)
+                        TextColor(value: $redValue)
+                    }
+                    HStack {
+                        LabelColor(value: $greenValue)
+                        Slider(value: $greenValue, in: 1...255, step: 1)
+                            .tint(.green)
+                            .onChange(of: greenValue, perform: changeSlider)
+                        TextColor(value: $greenValue)
+                    }
+                    HStack {
+                        LabelColor(value: $blueValue)
+                        Slider(value: $blueValue, in: 1...255, step: 1)
+                            .tint(.blue)
+                            .onChange(of: blueValue, perform: changeSlider)
+                        TextColor(value: $blueValue)
+                    }
                 }
                 
                 Spacer()
             }.padding()
         }
     }
+    
+    private func changeSlider(_ value: Double) {
+        color = Color(red: redValue / 255.0, green: greenValue / 255.0, blue: blueValue / 255.0)
+    }
 }
 
-struct SetColorView: View {
+struct LabelColor: View {
     @Binding var value: Double
-    let color: Color
     
     var body: some View {
-        HStack {
-            Text("\(lround(value))")
-                .frame(width: 36, alignment: .leading)
-                .foregroundColor(color)
-            Slider(value: $value, in: 1...255, step: 1)
-                .tint(color)
-                .onChange(of: value, perform: onChange)
-            TextField("", value: $value, formatter: NumberFormatter())
-                .keyboardType(.numberPad)
-                .frame(width: 36)
-                .multilineTextAlignment(.trailing)
-                .modifier(BorderedViewModifier())
-        }
-    }
+        Text("\(lround(value))")
+            .frame(width: 36, alignment: .leading)
+            .foregroundColor(.white)
     
-    private func onChange(value: Double) {
-        print(value)
+    }
+}
+
+struct TextColor: View {
+    @Binding var value: Double
+    
+    var body: some View {
+        TextField("", value: $value, formatter: NumberFormatter())
+            .keyboardType(.numberPad)
+            .frame(width: 36)
+            .multilineTextAlignment(.trailing)
+            .modifier(BorderedViewModifier())
     }
 }
 
@@ -86,3 +106,52 @@ struct ContentView_Previews: PreviewProvider {
         ContentView()
     }
 }
+
+
+// неудачная попытка все объединить...
+//enum ChangeColor {
+//    case red
+//    case green
+//    case blue
+//
+//    var color: Color {
+//        switch self {
+//        case .red:
+//            return Color.red
+//        case .green:
+//            return Color.green
+//        case .blue:
+//            return Color.blue
+//        }
+//    }
+//}
+
+//struct SetColorView: View {
+//    @Binding var value: Double
+//    @Binding var color: Color
+//
+//    let type: ChangeColor
+//
+//    var body: some View {
+//        HStack {
+//            Text("\(lround(value))")
+//                .frame(width: 36, alignment: .leading)
+//                .foregroundColor(type.color)
+//            Slider(value: $value, in: 1...255, step: 1)
+//                .tint(type.color)
+//                .onChange(of: value, perform: onChange)
+//            TextField("", value: $value, formatter: NumberFormatter())
+//                .keyboardType(.numberPad)
+//                .frame(width: 36)
+//                .multilineTextAlignment(.trailing)
+//                .modifier(BorderedViewModifier())
+//        }
+//    }
+//
+//    private func onChange(value: Double) {
+//        guard let cgColor = color.cgColor else { return }
+//        let ciColor = CIColor(cgColor: cgColor)
+//
+//        print("\(color) - \(value) || \(ciColor.green)")
+//    }
+//}
