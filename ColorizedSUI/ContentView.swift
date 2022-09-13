@@ -20,7 +20,7 @@ struct ContentView: View {
                 .opacity(0.5)
                 .ignoresSafeArea()
                 
-            VStack{
+            VStack(spacing: 20) {
                 RoundedRectangle(cornerRadius: 10)
                     .frame(height: 75)
                     .foregroundColor(color)
@@ -28,13 +28,13 @@ struct ContentView: View {
                         RoundedRectangle(cornerRadius: 10)
                             .stroke(.white, lineWidth: 4)
                     )
-                
-                SetColorView(value: $redValue, color: .red)
-                SetColorView(value: $greenValue, color: .green)
-                SetColorView(value: $blueValue, color: .blue)
+                VStack {
+                    SetColorView(value: $redValue, color: .red)
+                    SetColorView(value: $greenValue, color: .green)
+                    SetColorView(value: $blueValue, color: .blue)
+                }
                 
                 Spacer()
-                    
             }.padding()
         }
     }
@@ -47,12 +47,37 @@ struct SetColorView: View {
     var body: some View {
         HStack {
             Text("\(lround(value))")
-                .frame(width: 40)
+                .frame(width: 36, alignment: .leading)
                 .foregroundColor(color)
             Slider(value: $value, in: 1...255, step: 1)
                 .tint(color)
-            //TextField( ("", text: $redValue)
+                .onChange(of: value, perform: onChange)
+            TextField("", value: $value, formatter: NumberFormatter())
+                .keyboardType(.numberPad)
+                .frame(width: 36)
+                .multilineTextAlignment(.trailing)
+                .modifier(BorderedViewModifier())
         }
+    }
+    
+    private func onChange(value: Double) {
+        print(value)
+    }
+}
+
+// Добавляем на текстовое поле модификатор
+struct BorderedViewModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .padding(8)
+            .background(.white)
+            .clipShape(RoundedRectangle(cornerRadius: 4))
+            .overlay(
+                RoundedRectangle(cornerRadius: 4)
+                    .stroke(lineWidth: 2)
+                    .foregroundColor(.blue)
+            )
+            .shadow(color: .gray.opacity(0.3), radius: 3, x: 1, y: 2)
     }
 }
 
