@@ -14,6 +14,8 @@ struct ContentView: View {
     @State private var greenValue = 1.0
     @State private var blueValue = 1.0
     
+    @State private var alertPresented = false
+    
     var body: some View {
         ZStack {
             Color(.blue)
@@ -50,6 +52,8 @@ struct ContentView: View {
                             .onChange(of: blueValue, perform: changeSlider)
                         TextColor(value: $blueValue)
                     }
+                }.alert("Wrong type", isPresented: $alertPresented, actions: {}) {
+                    Text("Please enter 1..255 value")
                 }
                 
                 Spacer()
@@ -58,6 +62,10 @@ struct ContentView: View {
     }
     
     private func changeSlider(_ value: Double) {
+        if value < 1 || value > 255 {
+            alertPresented = true
+        }
+            
         color = Color(red: redValue / 255.0, green: greenValue / 255.0, blue: blueValue / 255.0)
     }
 }
