@@ -7,16 +7,12 @@
 
 import SwiftUI
 
-struct ContentView: View {
-    @State private var color = Color.black
-    
+struct ContentView: View {   
     @State private var redValue = Double.random(in: 0...255).rounded()
     @State private var greenValue = Double.random(in: 0...255).rounded()
     @State private var blueValue = Double.random(in: 0...255).rounded()
     
     @FocusState private var focusedField: Field?
-    
-    @State private var alertPresented = false
     
     var body: some View {
         ZStack {
@@ -67,7 +63,7 @@ extension ContentView {
         case blue
     }
     
-private func nextField() {
+    private func nextField() {
         switch focusedField {
         case .red:
             focusedField = .green
