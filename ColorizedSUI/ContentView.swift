@@ -10,9 +10,11 @@ import SwiftUI
 struct ContentView: View {
     @State private var color = Color.black
     
-    @State private var redValue = 1.0
-    @State private var greenValue = 1.0
-    @State private var blueValue = 1.0
+    @State private var redValue = Double.random(in: 0...255).rounded()
+    @State private var greenValue = Double.random(in: 0...255).rounded()
+    @State private var blueValue = Double.random(in: 0...255).rounded()
+    
+    @FocusState private var focusedField: Field?
     
     @State private var alertPresented = false
     
@@ -21,91 +23,74 @@ struct ContentView: View {
             Color(.blue)
                 .opacity(0.5)
                 .ignoresSafeArea()
+                .onTapGesture {
+                    focusedField = nil
+                }
                 
             VStack(spacing: 20) {
-                RoundedRectangle(cornerRadius: 10)
-                    .frame(height: 75)
-                    .foregroundColor(color)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 10)
-                            .stroke(.white, lineWidth: 4)
-                    )
+                ColorView(red: redValue, green: greenValue, blue: blueValue)
+                
                 VStack {
-                    HStack {
-                        LabelColor(value: $redValue)
-                        Slider(value: $redValue, in: 1...255, step: 1)
-                            .tint(.red)
-                            .onChange(of: redValue, perform: changeSlider)
-                        TextColor(value: $redValue)
+                    ColorSliderView(value: $redValue, color: .red)
+                        .focused($focusedField, equals: .red)
+                    ColorSliderView(value: $greenValue, color: .green)
+                        .focused($focusedField, equals: .green)
+                    ColorSliderView(value: $blueValue, color: .blue)
+                        .focused($focusedField, equals: .blue)
+                }
+                .toolbar {
+                    ToolbarItemGroup(placement: .keyboard) {
+                        Button(action: previousField) {
+                            Image(systemName: "chevron.up")
+                        }
+                        Button(action: nextField) {
+                            Image(systemName: "chevron.down")
+                        }
+                        Spacer()
+                        Button("Done") {
+                            focusedField = nil
+                        }
                     }
-                    HStack {
-                        LabelColor(value: $greenValue)
-                        Slider(value: $greenValue, in: 1...255, step: 1)
-                            .tint(.green)
-                            .onChange(of: greenValue, perform: changeSlider)
-                        TextColor(value: $greenValue)
-                    }
-                    HStack {
-                        LabelColor(value: $blueValue)
-                        Slider(value: $blueValue, in: 1...255, step: 1)
-                            .tint(.blue)
-                            .onChange(of: blueValue, perform: changeSlider)
-                        TextColor(value: $blueValue)
-                    }
-                }.alert("Wrong type", isPresented: $alertPresented, actions: {}) {
-                    Text("Please enter 1..255 value")
                 }
                 
                 Spacer()
             }.padding()
         }
     }
+}
+
+extension ContentView {
     
-    private func changeSlider(_ value: Double) {
-        if value < 1 || value > 255 {
-            alertPresented = true
+    private enum Field {
+        case red
+        case green
+        case blue
+    }
+    
+private func nextField() {
+        switch focusedField {
+        case .red:
+            focusedField = .green
+        case .green:
+            focusedField = .blue
+        case .blue:
+            focusedField = .red
+        case .none:
+            focusedField = nil
         }
-            
-        color = Color(red: redValue / 255.0, green: greenValue / 255.0, blue: blueValue / 255.0)
     }
-}
-
-struct LabelColor: View {
-    @Binding var value: Double
     
-    var body: some View {
-        Text("\(lround(value))")
-            .frame(width: 36, alignment: .leading)
-            .foregroundColor(.white)
-    
-    }
-}
-
-struct TextColor: View {
-    @Binding var value: Double
-    
-    var body: some View {
-        TextField("", value: $value, formatter: NumberFormatter())
-            .keyboardType(.numberPad)
-            .frame(width: 36)
-            .multilineTextAlignment(.trailing)
-            .modifier(BorderedViewModifier())
-    }
-}
-
-// Добавляем на текстовое поле модификатор
-struct BorderedViewModifier: ViewModifier {
-    func body(content: Content) -> some View {
-        content
-            .padding(8)
-            .background(.white)
-            .clipShape(RoundedRectangle(cornerRadius: 4))
-            .overlay(
-                RoundedRectangle(cornerRadius: 4)
-                    .stroke(lineWidth: 2)
-                    .foregroundColor(.blue)
-            )
-            .shadow(color: .gray.opacity(0.3), radius: 3, x: 1, y: 2)
+    private func previousField() {
+        switch focusedField {
+        case .red:
+            focusedField = .blue
+        case .green:
+            focusedField = .red
+        case .blue:
+            focusedField = .green
+        case .none:
+            focusedField = nil
+        }
     }
 }
 
@@ -114,52 +99,3 @@ struct ContentView_Previews: PreviewProvider {
         ContentView()
     }
 }
-
-
-// неудачная попытка все объединить...
-//enum ChangeColor {
-//    case red
-//    case green
-//    case blue
-//
-//    var color: Color {
-//        switch self {
-//        case .red:
-//            return Color.red
-//        case .green:
-//            return Color.green
-//        case .blue:
-//            return Color.blue
-//        }
-//    }
-//}
-
-//struct SetColorView: View {
-//    @Binding var value: Double
-//    @Binding var color: Color
-//
-//    let type: ChangeColor
-//
-//    var body: some View {
-//        HStack {
-//            Text("\(lround(value))")
-//                .frame(width: 36, alignment: .leading)
-//                .foregroundColor(type.color)
-//            Slider(value: $value, in: 1...255, step: 1)
-//                .tint(type.color)
-//                .onChange(of: value, perform: onChange)
-//            TextField("", value: $value, formatter: NumberFormatter())
-//                .keyboardType(.numberPad)
-//                .frame(width: 36)
-//                .multilineTextAlignment(.trailing)
-//                .modifier(BorderedViewModifier())
-//        }
-//    }
-//
-//    private func onChange(value: Double) {
-//        guard let cgColor = color.cgColor else { return }
-//        let ciColor = CIColor(cgColor: cgColor)
-//
-//        print("\(color) - \(value) || \(ciColor.green)")
-//    }
-//}
